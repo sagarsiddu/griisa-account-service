@@ -36,3 +36,7 @@ logging:
     org:
       springframework: INFO
       com.example.griisa_account_service: DEBUG
+
+kyc:
+  endpoint:
+    uri: http://localhost:8080/api/verify

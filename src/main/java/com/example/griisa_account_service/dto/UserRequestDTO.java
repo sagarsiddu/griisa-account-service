@@ -27,10 +27,11 @@ public class UserRequestDTO {
     private String phoneNumber;
     private LocalDate dateOfBirth;
 
-    @NotBlank @Size(max = 20)
+    @NotBlank
+    @Pattern(regexp = "\\d{12}")
     private String aadhaarNumber;
 
-    @NotBlank @Size(max = 20)
+    @NotBlank @Pattern(regexp = "[A-Z]{5}[0-9]{4}[A-Z]")
     private String panNumber;
 
     private String addressLine1;
