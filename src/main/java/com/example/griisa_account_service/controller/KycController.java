@@ -1,10 +1,6 @@
-// KycController.java
 package com.example.griisa_account_service.controller;
 
-//import com.example.griisa_account_service.dto.KycRequestDTO;
-//import com.example.griisa_account_service.dto.KycResponseDTO;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
