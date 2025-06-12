@@ -6,16 +6,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class FailedRecordService {
 
     @Autowired
     private FailedRecordRepository failedRecordRepository;
 
+    private long generateId(String rawData, String errorMessage) {
+        String combined = rawData + "|" + errorMessage;
+        return (long) combined.hashCode() & 0xffffffffL; // Ensures positive long
+    }
+
     public void save(String[] lineData, String errorMessage) {
+        log.info("FailedRecordService | save : Saving failed record with error: {}", errorMessage);
+        String rawData = String.join(",", lineData);
+        long id = generateId(rawData, errorMessage);
         FailedRecord record = FailedRecord.builder()
-                .rawData(String.join(",", lineData))
+                .id(id)
+                .rawData(rawData)
                 .errorMessage(errorMessage)
                 .failedAt(LocalDateTime.now())
                 .build();

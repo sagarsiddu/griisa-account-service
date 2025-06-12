@@ -60,24 +60,29 @@ public class AccountService {
 
             String kycResult = kycService.performKYC(user, dto.getAadhaarNumber(), dto.getPanNumber()).get();
 
+            log.info("AccountService | processSingleUserTransactional: KYC result for {}: {}", dto.getEmail(), kycResult);
             KycRecord kyc = kycRepo.save(buildKyc(user, dto, kycResult));
 
             if ("SUCCESS".equalsIgnoreCase(kycResult)) {
                 Account acc = accountRepo.save(buildAccount(user));
                 log.info("Account created successfully: {}", acc.getAccountNumber());
             } else {
+                log.info("AccountService | processSingleUserTransactional: KYC failed for {}", dto.getEmail());
+                handleFailure(dto, "KYC failed for " + dto.getEmail() + ". Account not created.");
                 log.warn("KYC failed for {}. Account not created.", dto.getEmail());
             }
 
         } catch (ConstraintViolationException e) {
-            String errorMsg = "Validation failed: " + e.getConstraintViolations().toString();
-            log.warn(errorMsg);
-            failedRecordService.save(dtoToArray(dto), errorMsg);
+            handleFailure(dto, "Validation failed: " + e.getConstraintViolations());
         } catch (Exception e) {
-            String errorMsg = "Processing failed: " + e.getMessage();
-            log.error(errorMsg, e);
-            failedRecordService.save(dtoToArray(dto), errorMsg);
+            handleFailure(dto, "Processing failed: " + e.getMessage());
         }
+    }
+
+    private void handleFailure(UserRequestDTO dto, String errorMsg) {
+        log.info("AccountService | handleFailure: {}", dto.toString());
+        log.warn(errorMsg);
+        failedRecordService.save(dtoToArray(dto), errorMsg);
     }
 
     private void validate(UserRequestDTO dto) {

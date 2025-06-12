@@ -17,12 +17,13 @@ import java.time.LocalDateTime;
 public class FailedRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(length = 64, unique = true)
     private Long id;
 
     @Column(columnDefinition = "TEXT")
     private String rawData;
 
+    @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
     private LocalDateTime failedAt;

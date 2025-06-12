@@ -1,11 +1,11 @@
+// KycController.java
 package com.example.griisa_account_service.controller;
 
+//import com.example.griisa_account_service.dto.KycRequestDTO;
+//import com.example.griisa_account_service.dto.KycResponseDTO;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+//import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
@@ -18,6 +18,8 @@ public class KycController {
         String pan = payload.get("pan");
 
         if (aadhaar != null && aadhaar.startsWith("9")) {
+            return ResponseEntity.ok("FAILURE");
+        } else if (pan != null && pan.startsWith("Z")) {
             return ResponseEntity.ok("FAILURE");
         }
         return ResponseEntity.ok("SUCCESS");

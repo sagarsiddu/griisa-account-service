@@ -7,7 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Builder
 @Getter
@@ -41,5 +40,6 @@ public class UserRequestDTO {
     private String zipCode;
     private String idDocumentType;
     private String idDocumentNumber;
+    private String gender;
 }
 

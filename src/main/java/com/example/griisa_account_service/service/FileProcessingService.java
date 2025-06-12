@@ -48,7 +48,7 @@ public class FileProcessingService {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
              CSVReader csvReader = new CSVReader(reader)) {
 
-            String[] headers = csvReader.readNext(); // Skip header line
+            String[] headers = csvReader.readNext(); // skip header
             String[] line;
 
             while ((line = csvReader.readNext()) != null) {
@@ -58,40 +58,31 @@ public class FileProcessingService {
                 }
 
                 try {
-                    // Extract and trim fields
-//                    String firstName = line[0].trim();
-//                    String lastName = line[1].trim();
-//                    String email = line[2].trim();
+                    String email = line[2].trim();
                     String phone = line[3].trim();
-//                    String aadhaar = line[4].trim();
-//                    String pan = line[5].trim();
-//                    String addressLine1 = line[6].trim();
-//                    String addressLine2 = line[7].trim();
-//                    String city = line[8].trim();
-//                    String state = line[9].trim();
-//                    String zipCode = line[10].trim();
-//                    String idDocumentType = line[11].trim();
-//                    String idDocumentNumber = line[12].trim();
+                    String aadhaar = line[12].trim();
+                    String pan = line[13].trim();
 
-                    // 🔍 Field Validations
-//                    if (!email.contains("@") || email.startsWith("@") || email.endsWith("@")) {
-//                        throw new IllegalArgumentException("Invalid email format: " + email);
-//                    }
+                    // Validations
+                    if (!email.contains("@") || email.startsWith("@") || email.endsWith("@")) {
+                        throw new IllegalArgumentException("Invalid email format: " + email);
+                    }
                     if (!phone.matches("\\d{10}")) {
                         throw new IllegalArgumentException("Invalid phone number: " + phone);
                     }
-//                    if (!aadhaar.matches("\\d{12}")) {
-//                        throw new IllegalArgumentException("Invalid Aadhaar number: " + aadhaar);
-//                    }
-//                    if (!pan.matches("[A-Z]{5}[0-9]{4}[A-Z]")) {
-//                        throw new IllegalArgumentException("Invalid PAN number: " + pan);
-//                    }
+                    if (!aadhaar.matches("\\d{12}")) {
+                        throw new IllegalArgumentException("Invalid Aadhaar number: " + aadhaar);
+                    }
+                    if (!pan.matches("[A-Z]{5}[0-9]{4}[A-Z]")) {
+                        throw new IllegalArgumentException("Invalid PAN number: " + pan);
+                    }
+
                     UserRequestDTO dto = UserRequestDTO.builder()
                             .firstName(line[0].trim())
                             .lastName(line[1].trim())
-                            .email(line[2].trim())
-                            .phoneNumber(phone);
-                            .dateOfBirth(LocalDate.parse(line[4].trim())) // Assuming format is yyyy-MM-dd
+                            .email(email)
+                            .phoneNumber(phone)
+                            .dateOfBirth(LocalDate.parse(line[4].trim()))
                             .addressLine1(line[5].trim())
                             .addressLine2(line[6].trim())
                             .city(line[7].trim())
@@ -99,14 +90,9 @@ public class FileProcessingService {
                             .zipCode(line[9].trim())
                             .idDocumentType(line[10].trim())
                             .idDocumentNumber(line[11].trim())
-                            .aadhaarNumber(line[12].trim())
-                            .panNumber(line[13].trim())
+                            .aadhaarNumber(aadhaar)
+                            .panNumber(pan)
                             .build();
-
-                    if (dto.getEmail().isBlank() || dto.getPhoneNumber().isBlank()) {
-                        log.warn("Skipping line due to blank email or phone: {}", Arrays.toString(line));
-                        continue;
-                    }
 
                     users.add(dto);
                 } catch (Exception e) {
@@ -119,4 +105,5 @@ public class FileProcessingService {
         }
         return users;
     }
+
 }
