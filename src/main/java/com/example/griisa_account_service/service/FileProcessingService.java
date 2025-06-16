@@ -25,6 +25,14 @@ public class FileProcessingService {
         this.csvUserParser = csvUserParser;
     }
 
+    /**
+     * Asynchronously processes a CSV file containing user data.
+     * Parses the file, splits users into batches, and processes each batch.
+     *
+     * @param file the uploaded CSV file
+     * @return a {@link CompletableFuture} containing the total number of parsed records
+     */
+
     @Async
     public CompletableFuture<Integer> processFileAsync(MultipartFile file) {
         List<UserRequestDTO> dtos = csvUserParser.parse(file);

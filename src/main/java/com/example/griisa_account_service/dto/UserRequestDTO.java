@@ -13,7 +13,8 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequestDTO {
+public class UserRequestDTO {   //AccountReqDTO
+    //Add kyc and account and user objects combined
     @NotBlank @Size(max = 50)
     private String firstName;
 

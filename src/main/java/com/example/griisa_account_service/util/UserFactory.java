@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
+//Bean util.copy or map
 public class UserFactory {
     public User create(UserRequestDTO dto) {
         return User.builder()
