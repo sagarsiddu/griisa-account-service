@@ -1,7 +1,6 @@
 package com.example.griisa_account_service.listener;
 
 import org.springframework.batch.core.*;
-import org.springframework.batch.core.listener.JobExecutionListenerSupport;
 import org.springframework.stereotype.Component;
 
 @Component
