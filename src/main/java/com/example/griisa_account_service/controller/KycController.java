@@ -1,26 +1,24 @@
 package com.example.griisa_account_service.controller;
 
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
-@Slf4j
+@RequestMapping("/kyc")
 public class KycController {
 
-    @PostMapping("/verify")
-    public ResponseEntity<String> verify(@RequestBody Map<String, String> payload) {
-        String aadhaar = payload.get("aadhaar");
-        String pan = payload.get("pan");
-        log.info("Received KYC verification request with Aadhaar: {}, PAN: {}", aadhaar, pan);
-
-        if (aadhaar != null && aadhaar.startsWith("9")) {
-            return ResponseEntity.ok("FAILURE");
-        } else if (pan != null && pan.startsWith("Z")) {
-            return ResponseEntity.ok("FAILURE");
-        }
-        return ResponseEntity.ok("SUCCESS");
+    @PostMapping("/validate")
+    public ResponseEntity<KycResponse> validate(@RequestBody KycRequest req) {
+        boolean ok = req.aadhaarNumber().matches("\\d{12}") &&
+                req.panNumber().matches("[A-Z]{5}\\d{4}[A-Z]");
+        return ResponseEntity.ok(new KycResponse(ok ? "PASSED" : "FAILED", ok ? "KYC OK" : "Invalid"));
     }
+
+    public static record KycRequest(String aadhaarNumber, String panNumber, String idDocumentNumber) {}
+    public static record KycResponse(String status, String details) {}
 }
+

@@ -1,44 +1,21 @@
 package com.example.griisa_account_service.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "accounts")
-@Builder
-@Getter
-@Setter
-@NoArgsConstructor
+@Table(name = "account")
+@Data @NoArgsConstructor
 @AllArgsConstructor
 public class Account {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long accountId;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @Column(length = 20, nullable = false, unique = true)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String accountNumber;
 
-    @Column(length = 20)
-    private String accountType;
+    @OneToOne
+    @JoinColumn(name = "kyc_id", nullable = false)
+    private Kyc kyc;
 
-    private BigDecimal balance;
-
-    @Column(length = 10)
-    private String currency;
-
-    @Column(length = 20)
-    private String status;
-
-    private LocalDate openedDate;
-    private LocalDate closedDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

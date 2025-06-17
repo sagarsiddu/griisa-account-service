@@ -1,4 +1,4 @@
-package com.example.griisa_account_service.repo;
+package com.example.griisa_account_service.repository;
 
 import com.example.griisa_account_service.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

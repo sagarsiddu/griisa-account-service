@@ -1,50 +1,29 @@
 package com.example.griisa_account_service.service;
 
-import com.example.griisa_account_service.dto.UserRequestDTO;
-import com.example.griisa_account_service.util.CsvUserParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.nio.file.Path;
 
 @Service
 public class FileProcessingService {
 
-    private final AccountService accountService;
-    private final CsvUserParser csvUserParser;
-    private static final Logger log = LoggerFactory.getLogger(FileProcessingService.class);
+    private final JobLauncher jobLauncher;
+    private final Job importJob;
 
-    @Autowired
-    public FileProcessingService(AccountService accountService, CsvUserParser csvUserParser) {
-        this.accountService = accountService;
-        this.csvUserParser = csvUserParser;
+    public FileProcessingService(JobLauncher jobLauncher, Job importJob) {
+        this.jobLauncher = jobLauncher;
+        this.importJob = importJob;
     }
 
-    /**
-     * Asynchronously processes a CSV file containing user data.
-     * Parses the file, splits users into batches, and processes each batch.
-     *
-     * @param file the uploaded CSV file
-     * @return a {@link CompletableFuture} containing the total number of parsed records
-     */
-
-    @Async
-    public CompletableFuture<Integer> processFileAsync(MultipartFile file) {
-        List<UserRequestDTO> dtos = csvUserParser.parse(file);
-        log.info("FileProcessingService | processFileAsync: Parsed {} records from file", dtos.size());
-        for (int i = 0; i < dtos.size(); i += 500) {
-            List<UserRequestDTO> batch = dtos.subList(i, Math.min(i + 500, dtos.size()));
-            try {
-                accountService.processBatch(batch);
-            } catch (Exception e) {
-                log.error("Batch processing failed at batch {}: {}", i / 500, e.getMessage(), e);
-            }
-        }
-        return CompletableFuture.completedFuture(dtos.size());
+    public void startBatch(Path csvFile) throws Exception {
+        JobParameters params = new JobParametersBuilder()
+                .addString("filePath", csvFile.toString())
+                .addLong("ts", System.currentTimeMillis())
+                .toJobParameters();
+        jobLauncher.run(importJob, params);
     }
 }

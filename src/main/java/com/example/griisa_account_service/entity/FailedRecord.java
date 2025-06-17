@@ -2,7 +2,6 @@ package com.example.griisa_account_service.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,22 +9,20 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "failed_records")
-@Data
-@NoArgsConstructor
+@Data @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class FailedRecord {
-
-    @Id
-    @Column(length = 64, unique = true)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String reason;
 
     @Column(columnDefinition = "TEXT")
-    private String rawData;
+    private String payload;
 
-    @Column(columnDefinition = "TEXT")
-    private String errorMessage;
+    private LocalDateTime failedAt = LocalDateTime.now();
 
-    private LocalDateTime failedAt;
+    public FailedRecord(String reason, String payload) {
+        this.reason = reason;
+        this.payload = payload;
+    }
 }
-

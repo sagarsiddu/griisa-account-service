@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableAsync
-@PropertySource("classpath:config/external-config.properties")
+//@PropertySource("classpath:config/external-config.properties")
 @EnableBatchProcessing
 public class GriisaAccountServiceApplication {
 
