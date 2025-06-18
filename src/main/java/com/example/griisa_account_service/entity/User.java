@@ -3,7 +3,6 @@ package com.example.griisa_account_service.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,7 +29,7 @@ public class User {
     @Column(length = 10, nullable = false)
     private String phoneNumber;
 
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
 
     @Column(length = 100)
     private String addressLine1;

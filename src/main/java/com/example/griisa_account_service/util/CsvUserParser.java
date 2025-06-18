@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +45,7 @@ public class CsvUserParser {
                             .lastName(line[1].trim())
                             .email(line[2].trim())
                             .phoneNumber(line[3].trim())
-                            .dateOfBirth(LocalDate.parse(line[4].trim()))
+                            .dateOfBirth(line[4].trim())
                             .addressLine1(line[5].trim())
                             .addressLine2(line[6].trim())
                             .city(line[7].trim())

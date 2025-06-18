@@ -6,8 +6,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.time.LocalDate;
-
 @Builder
 @Getter
 @Setter
@@ -26,7 +24,7 @@ public class UserRequestDTO {   //AccountReqDTO
 
     @Pattern(regexp = "\\d{10}")
     private String phoneNumber;
-    private LocalDate dateOfBirth;
+    private String dateOfBirth;
 
     @NotBlank
     @Pattern(regexp = "\\d{12}")
