@@ -1,25 +1,42 @@
 package com.example.griisa_account_service.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Table(name = "users")
-@Data @NoArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
-public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String firstName, lastName, email, phoneNumber, dateOfBirth;
-    private String addressLine1, addressLine2, city, state, zipCode;
+@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Table(name = "users")
+public class User extends AuditLog {
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Kyc kyc;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userId;
 
-    public void setKyc(Kyc kyc) {
-        this.kyc = kyc;
-        if (kyc != null) kyc.setUser(this);
-    }
+    private String firstName;
+    private String lastName;
+
+    @Column(unique = true)
+    private String email;
+
+    private String phoneNumber;
+    private String dateOfBirth;
+
+    private String addressLine1;
+    private String addressLine2;
+    private String city;
+    private String state;
+    private String zipCode;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "kyc_id", referencedColumnName = "id")
+    private KycRecord kyc;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private Account account;
 }
+

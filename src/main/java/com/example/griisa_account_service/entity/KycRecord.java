@@ -11,18 +11,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Account {
+public class KycRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false, length = 20)
-    private String accountNumber;
+    private String idDocumentType;
+    private String idDocumentNumber;
+    private String aadhaarNumber;
+    private String panNumber;
+    @Column(name = "unique_validation_key", unique = true)
+    private String uniqueValidationKey;
 
-    @Column(nullable = false)
-    private String status;
-
-    @OneToOne(mappedBy = "account")
+    @OneToOne(mappedBy = "kyc")
     private User user;
 }

@@ -1,12 +1,12 @@
 package com.example.griisa_account_service.service;
 
-import com.example.griisa_account_service.entity.Kyc;
+import com.example.griisa_account_service.entity.KycRecord;
 import com.example.griisa_account_service.entity.User;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AccountNumberService {
-    public String generate(User user, Kyc kyc) {
+    public String generate(User user, KycRecord kyc) {
         String seed = user.getEmail().hashCode() + "-"
                 + kyc.getAadhaarNumber().substring(0,4)
                 + System.currentTimeMillis() % 10000;
