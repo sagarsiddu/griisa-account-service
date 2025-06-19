@@ -17,6 +17,7 @@ public class FailedRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String reason;
 
     @Lob

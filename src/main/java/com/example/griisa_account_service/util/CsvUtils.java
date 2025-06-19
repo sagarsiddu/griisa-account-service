@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class CsvUtils {
 
@@ -27,7 +28,7 @@ public class CsvUtils {
                 && fileName.toLowerCase().endsWith(".csv");
     }
 
-    public static List<UserCsvRecordDto> parseCsvFile(MultipartFile file) throws Exception {
+    public static List<UserCsvRecordDto> parseCsvFile(MultipartFile file, BiConsumer<Integer, String> onParseError) throws Exception {
         Logger logger = LoggerFactory.getLogger(CsvUtils.class);
         List<UserCsvRecordDto> records = new ArrayList<>();
         try (
@@ -46,6 +47,9 @@ public class CsvUtils {
                     records.add(record);
                 } catch (Exception ex) {
                     logger.error("Failed to parse record at row {}: {}", rowNum, ex.getMessage());
+                    if (onParseError != null) {
+                        onParseError.accept(rowNum, ex.getMessage());
+                    }
                 }
                 rowNum++;
             }
@@ -54,20 +58,4 @@ public class CsvUtils {
             throw new Exception("Failed to parse CSV file: " + e.getMessage(), e);
         }
     }
-
-//    public static List<UserCsvRecordDto> parseCsvFile(MultipartFile file) throws Exception {
-//        try (
-//                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))
-//        ) {
-//            CsvToBean<UserCsvRecordDto> csvToBean = new CsvToBeanBuilder<UserCsvRecordDto>(reader)
-//                    .withType(UserCsvRecordDto.class)
-//                    .withIgnoreLeadingWhiteSpace(true)
-////                    .withSkipLines(1) // Assumes CSV has a header
-//                    .build();
-//
-//            return csvToBean.parse();
-//        } catch (Exception e) {
-//            throw new Exception("Failed to parse CSV file: " + e.getMessage(), e);
-//        }
-//    }
 }

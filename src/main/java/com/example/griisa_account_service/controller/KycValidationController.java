@@ -14,11 +14,11 @@ public class KycValidationController {
     @PostMapping("/validate")
     public ResponseEntity<Boolean> validate(@RequestBody UserCsvRecordDto dto) {
         boolean valid = isValidAadhaar(dto.getAadhaarNumber())
-                && isValidPan(dto.getPanNumber());
-//                && dto.getIdDocumentType() != null
-//                && !dto.getIdDocumentType().isBlank()
-//                && dto.getIdDocumentNumber() != null
-//                && dto.getIdDocumentNumber().length() >= 5;
+                && isValidPan(dto.getPanNumber())
+                && dto.getIdDocumentType() != null
+                && !dto.getIdDocumentType().isBlank()
+                && dto.getIdDocumentNumber() != null
+                && dto.getIdDocumentNumber().length() >= 5;
 
         return ResponseEntity.ok(valid);
     }

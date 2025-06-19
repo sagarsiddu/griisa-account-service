@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,15 +36,24 @@ public class CsvProcessingService {
     private final FailedRecordRepository failedRepo;
     private final KycClient kycClient;
     private final AccountNumberGenerator accountNumberGenerator;
-
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    @Autowired
+    private RecordPersistenceService recordPersistenceService;
 
     public void processCsv(MultipartFile file) throws Exception {
         if (!CsvUtils.isCsvFile(file)) {
             throw new IllegalArgumentException("Only CSV files are supported");
         }
 
-        List<UserCsvRecordDto> records = CsvUtils.parseCsvFile(file);
+        List<FailedRecord> parseFailures = new ArrayList<>();
+        List<UserCsvRecordDto> records = CsvUtils.parseCsvFile(file, (rowNum, errorMsg) -> {
+            parseFailures.add(new FailedRecord(null, "Parse error at row " + rowNum + ": " + errorMsg, ""));
+        });
+        // Persist all parse failures
+        for (FailedRecord fr : parseFailures) {
+            recordPersistenceService.persistUserOrLogFailure(null, null, fr.getReason());
+        }
+
         log.info("Parsed {} records from CSV file", records.size());
         List<List<UserCsvRecordDto>> chunks = chunkList(records);
         log.info("Chunked records into {} parts", chunks.size());
@@ -64,40 +74,35 @@ public class CsvProcessingService {
     }
 
     private void processChunk(List<UserCsvRecordDto> chunk) {
-        List<User> users = new ArrayList<>();
-        List<FailedRecord> failed = new ArrayList<>();
-
         for (UserCsvRecordDto dto : chunk) {
             Set<ConstraintViolation<UserCsvRecordDto>> violations = validator.validate(dto);
-            log.info("Processing record: {}", dto);
             if (!violations.isEmpty()) {
                 String errors = violations.stream()
                         .map(ConstraintViolation::getMessage)
                         .collect(Collectors.joining("; "));
-                log.info("Validation failed: {} | Data: {}", errors, dto);
-                failed.add(new FailedRecord(null, errors, serialize(dto)));
+                recordPersistenceService.persistUserOrLogFailure(null, dto, "Validation failed: " + errors + " | ");
+                continue;
+            }
+
+            boolean kycValid = false;
+            try {
+                kycValid = kycClient.validate(dto);
+            } catch (Exception ex) {
+                recordPersistenceService.persistUserOrLogFailure(null, dto, "KYC validation error: " + ex.getMessage() + " | ");
                 continue;
             }
 
             try {
-                boolean kycValid = kycClient.validate(dto);
-                log.info("KYC validation for {}: {}", dto.getEmail(), kycValid);
-//                if (!kycValid) throw new Exception("KYC validation failed");
-
                 User user = toUserEntity(dto);
                 user.setCreatedBy(dto.getEmail());
                 user.setUpdatedBy(dto.getEmail());
                 user.setCreatedAt(LocalDateTime.now());
                 user.setUpdatedAt(LocalDateTime.now());
-
-                users.add(user);
+                recordPersistenceService.persistUserOrLogFailure(user, dto, "Persistence failed: ");
             } catch (Exception ex) {
-                failed.add(new FailedRecord(null, ex.getMessage(), serialize(dto)));
+                recordPersistenceService.persistUserOrLogFailure(null, dto, "User entity creation error: " + ex.getMessage() + " | ");
             }
         }
-
-        userRepo.saveAll(users);         // Includes cascade for KYC and Account
-        failedRepo.saveAll(failed);      // Only for failed records
     }
 
     private String serialize(UserCsvRecordDto dto) {
