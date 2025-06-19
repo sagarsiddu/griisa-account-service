@@ -3,12 +3,16 @@ package com.example.griisa_account_service.util;
 import com.example.griisa_account_service.dto.UserCsvRecordDto;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class CsvUtils {
@@ -24,18 +28,46 @@ public class CsvUtils {
     }
 
     public static List<UserCsvRecordDto> parseCsvFile(MultipartFile file) throws Exception {
+        Logger logger = LoggerFactory.getLogger(CsvUtils.class);
+        List<UserCsvRecordDto> records = new ArrayList<>();
         try (
                 Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))
         ) {
             CsvToBean<UserCsvRecordDto> csvToBean = new CsvToBeanBuilder<UserCsvRecordDto>(reader)
                     .withType(UserCsvRecordDto.class)
                     .withIgnoreLeadingWhiteSpace(true)
-                    .withSkipLines(1) // Assumes CSV has a header
                     .build();
 
-            return csvToBean.parse();
+            Iterator<UserCsvRecordDto> iterator = csvToBean.iterator();
+            int rowNum = 1;
+            while (iterator.hasNext()) {
+                try {
+                    UserCsvRecordDto record = iterator.next();
+                    records.add(record);
+                } catch (Exception ex) {
+                    logger.error("Failed to parse record at row {}: {}", rowNum, ex.getMessage());
+                }
+                rowNum++;
+            }
+            return records;
         } catch (Exception e) {
             throw new Exception("Failed to parse CSV file: " + e.getMessage(), e);
         }
     }
+
+//    public static List<UserCsvRecordDto> parseCsvFile(MultipartFile file) throws Exception {
+//        try (
+//                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))
+//        ) {
+//            CsvToBean<UserCsvRecordDto> csvToBean = new CsvToBeanBuilder<UserCsvRecordDto>(reader)
+//                    .withType(UserCsvRecordDto.class)
+//                    .withIgnoreLeadingWhiteSpace(true)
+////                    .withSkipLines(1) // Assumes CSV has a header
+//                    .build();
+//
+//            return csvToBean.parse();
+//        } catch (Exception e) {
+//            throw new Exception("Failed to parse CSV file: " + e.getMessage(), e);
+//        }
+//    }
 }

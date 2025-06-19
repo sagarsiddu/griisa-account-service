@@ -1,10 +1,12 @@
 package com.example.griisa_account_service.service;
 
 import com.example.griisa_account_service.dto.UserCsvRecordDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+@Slf4j
 @Service
 public class KycClient {
 
@@ -18,6 +20,7 @@ public class KycClient {
     }
 
     public boolean validate(UserCsvRecordDto dto) {
+        log.info("Validating KYC for user: {}", dto.getEmail());
         try {
             return Boolean.TRUE.equals(webClient.post()
                     .uri(kycApiPath)

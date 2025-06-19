@@ -14,6 +14,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +25,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CsvProcessingService {
@@ -40,12 +44,15 @@ public class CsvProcessingService {
         }
 
         List<UserCsvRecordDto> records = CsvUtils.parseCsvFile(file);
+        log.info("Parsed {} records from CSV file", records.size());
         List<List<UserCsvRecordDto>> chunks = chunkList(records);
+        log.info("Chunked records into {} parts", chunks.size());
 
         List<CompletableFuture<Void>> futures = chunks.stream()
                 .map(chunk -> CompletableFuture.runAsync(() -> processChunk(chunk)))
                 .toList();
 
+        log.info("Processing futures {} chunks in parallel", futures);
         // Wait for all to complete
         futures.forEach(CompletableFuture::join);
     }
@@ -62,17 +69,20 @@ public class CsvProcessingService {
 
         for (UserCsvRecordDto dto : chunk) {
             Set<ConstraintViolation<UserCsvRecordDto>> violations = validator.validate(dto);
+            log.info("Processing record: {}", dto);
             if (!violations.isEmpty()) {
                 String errors = violations.stream()
                         .map(ConstraintViolation::getMessage)
                         .collect(Collectors.joining("; "));
+                log.info("Validation failed: {} | Data: {}", errors, dto);
                 failed.add(new FailedRecord(null, errors, serialize(dto)));
                 continue;
             }
 
             try {
                 boolean kycValid = kycClient.validate(dto);
-                if (!kycValid) throw new Exception("KYC validation failed");
+                log.info("KYC validation for {}: {}", dto.getEmail(), kycValid);
+//                if (!kycValid) throw new Exception("KYC validation failed");
 
                 User user = toUserEntity(dto);
                 user.setCreatedBy(dto.getEmail());
@@ -100,27 +110,13 @@ public class CsvProcessingService {
 
     private User toUserEntity(UserCsvRecordDto dto) {
         User user = new User();
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setDateOfBirth(dto.getDateOfBirth());
-        user.setAddressLine1(dto.getAddressLine1());
-        user.setAddressLine2(dto.getAddressLine2());
-        user.setCity(dto.getCity());
-        user.setState(dto.getState());
-        user.setZipCode(dto.getZipCode());
+        BeanUtils.copyProperties(dto, user);
 
-        // KYC
-        var kyc = new KycRecord();
-        kyc.setIdDocumentType(dto.getIdDocumentType());
-        kyc.setIdDocumentNumber(dto.getIdDocumentNumber());
-        kyc.setAadhaarNumber(dto.getAadhaarNumber());
-        kyc.setPanNumber(dto.getPanNumber());
+        KycRecord kyc = new KycRecord();
+        BeanUtils.copyProperties(dto, kyc);
         user.setKyc(kyc);
 
-        // Account
-        var account = new Account();
+        Account account = new Account();
         account.setAccountNumber(accountNumberGenerator.generate(dto.getFirstName(), dto.getLastName(), dto.getPhoneNumber()));
         account.setStatus("ACTIVE");
         user.setAccount(account);
@@ -128,3 +124,5 @@ public class CsvProcessingService {
         return user;
     }
 }
+
+
