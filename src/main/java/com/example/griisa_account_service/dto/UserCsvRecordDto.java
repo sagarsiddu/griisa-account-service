@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
+// This DTO is mapped to User, KycRecord, and Account using MapStruct
 public class UserCsvRecordDto {
 
     @CsvBindByName(column = "first_name")

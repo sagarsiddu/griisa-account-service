@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor // Removed to avoid duplicate constructor
 @Builder
 public class FailedRecord {
 
@@ -17,10 +17,24 @@ public class FailedRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String reason;
-
     @Lob
     @Column(length = 10000, columnDefinition = "TEXT")
     private String payload;
+
+    @Column(columnDefinition = "TEXT")
+    private String reason;
+
+    @Column(length = 100)
+    private String errorCode;
+
+    @Column(columnDefinition = "TEXT")
+    private String errorType;
+
+    public FailedRecord(Long id, String reason, String errorCode, String errorType, String payload) {
+        this.id = id;
+        this.reason = reason;
+        this.errorCode = errorCode;
+        this.errorType = errorType;
+        this.payload = payload;
+    }
 }

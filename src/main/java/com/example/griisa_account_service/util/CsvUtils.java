@@ -58,4 +58,37 @@ public class CsvUtils {
             throw new Exception("Failed to parse CSV file: " + e.getMessage(), e);
         }
     }
+
+    public static Iterator<UserCsvRecordDto> streamingCsvIterator(MultipartFile file, BiConsumer<Integer, String> onParseError) throws Exception {
+        Logger logger = LoggerFactory.getLogger(CsvUtils.class);
+        Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+        CsvToBean<UserCsvRecordDto> csvToBean = new CsvToBeanBuilder<UserCsvRecordDto>(reader)
+                .withType(UserCsvRecordDto.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        Iterator<UserCsvRecordDto> iterator = csvToBean.iterator();
+        return new Iterator<UserCsvRecordDto>() {
+            int rowNum = 1;
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+            @Override
+            public UserCsvRecordDto next() {
+                try {
+                    UserCsvRecordDto record = iterator.next();
+                    rowNum++;
+                    return record;
+                } catch (Exception ex) {
+                    logger.error("Failed to parse record at row {}: {}", rowNum, ex.getMessage());
+                    if (onParseError != null) {
+                        onParseError.accept(rowNum, ex.getMessage());
+                    }
+                    rowNum++;
+                    // Skip this record and try the next
+                    return null;
+                }
+            }
+        };
+    }
 }
